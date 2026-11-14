@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Construction Tracker">
+  <rect width="512" height="512" rx="96" fill="#16181B"/>
+  <path d="M96 360h320v48H96z" fill="#E39B16"/>
+  <path d="M140 320l48-140h40l-24 140h-64zm96 0l56-160h48l-32 160h-72zm112 0l40-120h44l-20 120h-64z" fill="#EFECE6"/>
+  <circle cx="256" cy="148" r="36" fill="#E39B16"/>
+  <path d="M256 128v40M236 148h40" stroke="#16181B" stroke-width="10" stroke-linecap="round"/>
+</svg>
