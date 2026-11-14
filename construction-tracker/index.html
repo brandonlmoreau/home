@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1c1e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Clock in and out. Track construction hours by week." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>Construction Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <main class="shell">
+    <header class="brand">
+      <p class="brand-mark">Site Hours</p>
+      <h1>Construction Tracker</h1>
+      <p class="brand-sub">Clock in. Clock out. Weeks keep themselves.</p>
+    </header>
+
+    <section class="clock-panel" aria-labelledby="status-label">
+      <p id="status-label" class="status" data-state="out">Clocked out</p>
+      <p class="live-time" id="live-time" aria-live="polite">0:00:00</p>
+      <p class="live-hint" id="live-hint">Ready for the day</p>
+      <button type="button" id="clock-btn" class="clock-btn" data-mode="in">
+        Clock In
+      </button>
+    </section>
+
+    <section class="week-panel" aria-labelledby="week-title">
+      <div class="week-head">
+        <div>
+          <h2 id="week-title">This week</h2>
+          <p class="week-range" id="week-range"></p>
+        </div>
+        <div class="week-total-wrap">
+          <span class="week-total-label">Total</span>
+          <strong class="week-total" id="week-total">0:00</strong>
+        </div>
+      </div>
+      <ol class="day-list" id="day-list"></ol>
+    </section>
+
+    <section class="history-panel" aria-labelledby="history-title">
+      <div class="history-head">
+        <h2 id="history-title">Past weeks</h2>
+        <p class="history-sub">Saved on this phone. Survives week resets.</p>
+      </div>
+      <div id="history-list" class="history-list"></div>
+    </section>
+
+    <section class="tools-panel">
+      <button type="button" id="download-backup" class="tool-btn">Download backup</button>
+      <label class="tool-btn tool-file">
+        Import backup
+        <input type="file" id="import-backup" accept="application/json,.json" hidden />
+      </label>
+      <button type="button" id="download-app" class="tool-btn tool-btn-accent">Download app file</button>
+      <p class="install-hint" id="install-hint">
+        On your phone: open this page in Chrome → menu → <strong>Add to Home screen</strong> / <strong>Install app</strong>.
+      </p>
+      <button type="button" id="install-btn" class="tool-btn" hidden>Install on phone</button>
+    </section>
+  </main>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog" class="dialog-body">
+      <h3 id="dialog-title">Confirm</h3>
+      <p id="dialog-text"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="tool-btn">Cancel</button>
+        <button value="ok" class="tool-btn tool-btn-accent" id="dialog-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
