@@ -1,0 +1,5 @@
+{
+  "name": "home",
+  "install": "echo 'Static home apps — nothing to install'",
+  "start": "exec python3 -m http.server 3000 --bind 0.0.0.0"
+}
