@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en" data-standalone="1">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1a1c1e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Construction Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink: #16181b;
+  --ink-soft: #3a3f47;
+  --steel: #5c6570;
+  --line: rgba(22, 24, 27, 0.12);
+  --paper: #efece6;
+  --paper-2: #e4dfd5;
+  --safety: #e39b16;
+  --safety-deep: #b8740a;
+  --safety-glow: rgba(227, 155, 22, 0.35);
+  --good: #2f6b4f;
+  --good-soft: #d7ebe0;
+  --out: #6b3a2f;
+  --out-soft: #f0ddd7;
+  --shadow: 0 18px 50px rgba(22, 24, 27, 0.14);
+  --radius: 18px;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.4;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(227, 155, 22, 0.22), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(92, 101, 112, 0.18), transparent 50%),
+    linear-gradient(165deg, #f6f3ec 0%, #ebe6db 48%, #ddd6c8 100%);
+}
+
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    repeating-linear-gradient(
+      -12deg,
+      transparent 0,
+      transparent 11px,
+      rgba(22, 24, 27, 0.03) 11px,
+      rgba(22, 24, 27, 0.03) 12px
+    );
+  pointer-events: none;
+}
+
+.shell {
+  width: min(440px, 100%);
+  margin: 0 auto;
+  padding: calc(1.25rem + env(safe-area-inset-top)) 1.1rem calc(2rem + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 1.15rem;
+}
+
+.brand {
+  animation: rise 0.55s ease both;
+}
+
+.brand-mark {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--safety-deep);
+}
+
+.brand h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 10vw, 3.2rem);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.brand-sub {
+  margin: 0.55rem 0 0;
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+}
+
+.clock-panel,
+.week-panel,
+.history-panel,
+.tools-panel {
+  background: rgba(255, 252, 247, 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  animation: rise 0.6s ease both;
+}
+
+.clock-panel {
+  padding: 1.35rem 1.2rem 1.25rem;
+  text-align: center;
+  animation-delay: 0.05s;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status[data-state="in"] {
+  color: var(--good);
+  background: var(--good-soft);
+}
+
+.status[data-state="in"]::before {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.status[data-state="out"] {
+  color: var(--out);
+  background: var(--out-soft);
+}
+
+.live-time {
+  margin: 0.85rem 0 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(3rem, 14vw, 3.8rem);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-hint {
+  margin: 0 0 1.15rem;
+  color: var(--steel);
+  font-size: 0.95rem;
+}
+
+.clock-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  padding: 1.05rem 1rem;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(160deg, var(--safety) 0%, var(--safety-deep) 100%);
+  box-shadow: 0 10px 28px var(--safety-glow);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.clock-btn:active {
+  transform: scale(0.98);
+}
+
+.clock-btn[data-mode="out"] {
+  background: linear-gradient(160deg, #3f4650 0%, #1f2328 100%);
+  box-shadow: 0 10px 28px rgba(22, 24, 27, 0.28);
+}
+
+.week-panel {
+  padding: 1.15rem 1.1rem 0.85rem;
+  animation-delay: 0.1s;
+}
+
+.week-head,
+.history-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.85rem;
+}
+
+.week-panel h2,
+.history-panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.week-range,
+.history-sub {
+  margin: 0.15rem 0 0;
+  color: var(--steel);
+  font-size: 0.9rem;
+}
+
+.week-total-wrap {
+  text-align: right;
+}
+
+.week-total-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+
+.week-total {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.day-row {
+  display: grid;
+  grid-template-columns: 3.4rem 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.day-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.day-date {
+  color: var(--steel);
+  font-size: 0.92rem;
+}
+
+.day-hours {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.day-row.is-today .day-name {
+  color: var(--safety-deep);
+}
+
+.day-row.is-empty .day-hours {
+  color: var(--steel);
+  font-weight: 600;
+}
+
+.history-panel {
+  padding: 1.15rem 1.1rem 1rem;
+  animation-delay: 0.15s;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.history-empty {
+  margin: 0;
+  padding: 0.85rem 0.2rem 0.4rem;
+  color: var(--steel);
+}
+
+.history-item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+}
+
+.history-summary {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.85rem 0.9rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.history-summary strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.history-summary span {
+  color: var(--steel);
+  font-size: 0.9rem;
+}
+
+.history-summary em {
+  font-style: normal;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-details {
+  display: none;
+  padding: 0 0.9rem 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.history-item[open] .history-details {
+  display: block;
+}
+
+.history-item[open] .chev {
+  transform: rotate(180deg);
+}
+
+.chev {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-right: 2px solid var(--steel);
+  border-bottom: 2px solid var(--steel);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  justify-self: end;
+}
+
+.tools-panel {
+  padding: 1rem 1.1rem 1.15rem;
+  display: grid;
+  gap: 0.65rem;
+  animation-delay: 0.2s;
+}
+
+.tool-btn,
+.tool-file {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-align: center;
+  display: block;
+}
+
+.tool-btn:active {
+  transform: scale(0.99);
+}
+
+.tool-btn-accent {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(160deg, #3f4650 0%, #1f2328 100%);
+}
+
+.install-hint {
+  margin: 0.25rem 0 0;
+  color: var(--steel);
+  font-size: 0.9rem;
+}
+
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0;
+  width: min(360px, calc(100vw - 2rem));
+  box-shadow: var(--shadow);
+}
+
+dialog::backdrop {
+  background: rgba(22, 24, 27, 0.45);
+}
+
+.dialog-body {
+  margin: 0;
+  padding: 1.2rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dialog-body h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  text-transform: uppercase;
+}
+
+.dialog-body p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<main class="shell">
+    <header class="brand">
+      <p class="brand-mark">Site Hours</p>
+      <h1>Construction Tracker</h1>
+      <p class="brand-sub">Clock in. Clock out. Weeks keep themselves.</p>
+    </header>
+
+    <section class="clock-panel" aria-labelledby="status-label">
+      <p id="status-label" class="status" data-state="out">Clocked out</p>
+      <p class="live-time" id="live-time" aria-live="polite">0:00:00</p>
+      <p class="live-hint" id="live-hint">Ready for the day</p>
+      <button type="button" id="clock-btn" class="clock-btn" data-mode="in">
+        Clock In
+      </button>
+    </section>
+
+    <section class="week-panel" aria-labelledby="week-title">
+      <div class="week-head">
+        <div>
+          <h2 id="week-title">This week</h2>
+          <p class="week-range" id="week-range"></p>
+        </div>
+        <div class="week-total-wrap">
+          <span class="week-total-label">Total</span>
+          <strong class="week-total" id="week-total">0:00</strong>
+        </div>
+      </div>
+      <ol class="day-list" id="day-list"></ol>
+    </section>
+
+    <section class="history-panel" aria-labelledby="history-title">
+      <div class="history-head">
+        <h2 id="history-title">Past weeks</h2>
+        <p class="history-sub">Saved on this phone. Survives week resets.</p>
+      </div>
+      <div id="history-list" class="history-list"></div>
+    </section>
+
+    <section class="tools-panel">
+      <button type="button" id="download-backup" class="tool-btn">Download backup</button>
+      <label class="tool-btn tool-file">
+        Import backup
+        <input type="file" id="import-backup" accept="application/json,.json" hidden />
+      </label>
+      <button type="button" id="download-app" class="tool-btn tool-btn-accent">Download app file</button>
+      <p class="install-hint" id="install-hint">
+        On your phone: open this page in Chrome → menu → <strong>Add to Home screen</strong> / <strong>Install app</strong>.
+      </p>
+      <button type="button" id="install-btn" class="tool-btn" hidden>Install on phone</button>
+    </section>
+  </main>
+<dialog id="confirm-dialog">
+    <form method="dialog" class="dialog-body">
+      <h3 id="dialog-title">Confirm</h3>
+      <p id="dialog-text"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="tool-btn">Cancel</button>
+        <button value="ok" class="tool-btn tool-btn-accent" id="dialog-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+<script>
+(() => {
+  const STORAGE_KEY = "construction-tracker-v1";
+  const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const els = {
+    status: document.getElementById("status-label"),
+    liveTime: document.getElementById("live-time"),
+    liveHint: document.getElementById("live-hint"),
+    clockBtn: document.getElementById("clock-btn"),
+    weekRange: document.getElementById("week-range"),
+    weekTotal: document.getElementById("week-total"),
+    dayList: document.getElementById("day-list"),
+    historyList: document.getElementById("history-list"),
+    downloadBackup: document.getElementById("download-backup"),
+    importBackup: document.getElementById("import-backup"),
+    downloadApp: document.getElementById("download-app"),
+    installBtn: document.getElementById("install-btn"),
+    installHint: document.getElementById("install-hint"),
+    dialog: document.getElementById("confirm-dialog"),
+    dialogTitle: document.getElementById("dialog-title"),
+    dialogText: document.getElementById("dialog-text"),
+  };
+
+  let state = loadState();
+  let tickTimer = null;
+  let deferredInstall = null;
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return emptyState();
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return emptyState();
+      return {
+        version: 1,
+        activeShift: parsed.activeShift || null,
+        weeks: parsed.weeks && typeof parsed.weeks === "object" ? parsed.weeks : {},
+      };
+    } catch {
+      return emptyState();
+    }
+  }
+
+  function emptyState() {
+    return { version: 1, activeShift: null, weeks: {} };
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function startOfDay(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function mondayOf(date) {
+    const d = startOfDay(date);
+    const day = d.getDay(); // 0 Sun .. 6 Sat
+    const offset = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + offset);
+    return d;
+  }
+
+  function addDays(date, n) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+
+  function toDateKey(date) {
+    const d = startOfDay(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function parseDateKey(key) {
+    const [y, m, d] = key.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function formatShortDate(date) {
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  function formatRange(monday) {
+    const sunday = addDays(monday, 6);
+    const sameMonth = monday.getMonth() === sunday.getMonth();
+    const left = monday.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    const right = sunday.toLocaleDateString(undefined, {
+      month: sameMonth ? undefined : "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return `${left} – ${right}`;
+  }
+
+  function formatDuration(ms, withSeconds = false) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (withSeconds) {
+      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+    if (h === 0) return `0:${String(m).padStart(2, "0")}`;
+    return `${h}:${String(m).padStart(2, "0")}`;
+  }
+
+  function ensureWeek(weekKey) {
+    if (!state.weeks[weekKey]) {
+      state.weeks[weekKey] = { days: {} };
+    }
+    return state.weeks[weekKey];
+  }
+
+  function ensureDay(week, dayKey) {
+    if (!week.days[dayKey]) week.days[dayKey] = [];
+    return week.days[dayKey];
+  }
+
+  /** Split a shift across calendar midnights so Mon–Sun day totals stay accurate. */
+  function splitShift(clockInIso, clockOutIso) {
+    const start = new Date(clockInIso);
+    const end = new Date(clockOutIso);
+    if (!(end > start)) return [];
+
+    const segments = [];
+    let cursor = new Date(start);
+    while (cursor < end) {
+      const dayStart = startOfDay(cursor);
+      const nextMidnight = addDays(dayStart, 1);
+      const segEnd = end < nextMidnight ? end : nextMidnight;
+      segments.push({
+        in: cursor.toISOString(),
+        out: segEnd.toISOString(),
+        dayKey: toDateKey(cursor),
+        weekKey: toDateKey(mondayOf(cursor)),
+        ms: segEnd - cursor,
+      });
+      cursor = segEnd;
+    }
+    return segments;
+  }
+
+  function commitShift(clockInIso, clockOutIso) {
+    const segments = splitShift(clockInIso, clockOutIso);
+    for (const seg of segments) {
+      if (seg.ms <= 0) continue;
+      const week = ensureWeek(seg.weekKey);
+      const day = ensureDay(week, seg.dayKey);
+      day.push({ in: seg.in, out: seg.out });
+    }
+  }
+
+  function dayTotalMs(week, dayKey, now = new Date()) {
+    const entries = week?.days?.[dayKey] || [];
+    let total = entries.reduce((sum, e) => sum + (new Date(e.out) - new Date(e.in)), 0);
+
+    if (state.activeShift) {
+      const openSegs = splitShift(state.activeShift.clockIn, now.toISOString());
+      for (const seg of openSegs) {
+        if (seg.dayKey === dayKey) total += seg.ms;
+      }
+    }
+    return total;
+  }
+
+  function weekTotalMs(weekKey, now = new Date()) {
+    const monday = parseDateKey(weekKey);
+    let total = 0;
+    for (let i = 0; i < 7; i++) {
+      total += dayTotalMs(state.weeks[weekKey], toDateKey(addDays(monday, i)), now);
+    }
+    return total;
+  }
+
+  function currentOpenMs(now = new Date()) {
+    if (!state.activeShift) return 0;
+    return Math.max(0, now - new Date(state.activeShift.clockIn));
+  }
+
+  function render() {
+    const now = new Date();
+    const monday = mondayOf(now);
+    const weekKey = toDateKey(monday);
+    ensureWeek(weekKey);
+
+    const clockedIn = Boolean(state.activeShift);
+    els.status.dataset.state = clockedIn ? "in" : "out";
+    els.status.textContent = clockedIn ? "Clocked in" : "Clocked out";
+    els.clockBtn.dataset.mode = clockedIn ? "out" : "in";
+    els.clockBtn.textContent = clockedIn ? "Clock Out" : "Clock In";
+
+    const openMs = currentOpenMs(now);
+    els.liveTime.textContent = formatDuration(openMs, true);
+    if (clockedIn) {
+      const started = new Date(state.activeShift.clockIn);
+      els.liveHint.textContent = `Started ${started.toLocaleString(undefined, {
+        weekday: "short",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+    } else {
+      els.liveHint.textContent = "Ready for the day";
+    }
+
+    els.weekRange.textContent = formatRange(monday);
+    els.weekTotal.textContent = formatDuration(weekTotalMs(weekKey, now));
+
+    const todayKey = toDateKey(now);
+    els.dayList.innerHTML = "";
+    for (let i = 0; i < 7; i++) {
+      const dayDate = addDays(monday, i);
+      const dayKey = toDateKey(dayDate);
+      const ms = dayTotalMs(state.weeks[weekKey], dayKey, now);
+      const li = document.createElement("li");
+      li.className = "day-row";
+      if (dayKey === todayKey) li.classList.add("is-today");
+      if (ms === 0) li.classList.add("is-empty");
+      li.innerHTML = `
+        <span class="day-name">${DAY_NAMES[i]}</span>
+        <span class="day-date">${formatShortDate(dayDate)}</span>
+        <span class="day-hours">${ms ? formatDuration(ms) : "—"}</span>
+      `;
+      els.dayList.appendChild(li);
+    }
+
+    renderHistory(weekKey, now);
+  }
+
+  function renderHistory(currentWeekKey, now) {
+    const keys = Object.keys(state.weeks)
+      .filter((k) => k !== currentWeekKey)
+      .sort((a, b) => (a < b ? 1 : -1));
+
+    // Drop truly empty past weeks from the view (keep if they have any hours)
+    const nonempty = keys.filter((k) => weekTotalMs(k, now) > 0 || Object.keys(state.weeks[k].days || {}).length);
+
+    if (!nonempty.length) {
+      els.historyList.innerHTML = `<p class="history-empty">No past weeks yet. Finish this week and next Monday it will land here.</p>`;
+      return;
+    }
+
+    els.historyList.innerHTML = "";
+    for (const weekKey of nonempty) {
+      const monday = parseDateKey(weekKey);
+      const total = weekTotalMs(weekKey, now);
+      const item = document.createElement("article");
+      item.className = "history-item";
+      item.innerHTML = `
+        <button type="button" class="history-summary" aria-expanded="false">
+          <strong>${formatRange(monday)}</strong>
+          <em>${formatDuration(total)}</em>
+          <span class="chev" aria-hidden="true"></span>
+        </button>
+        <div class="history-details"></div>
+      `;
+      const details = item.querySelector(".history-details");
+      const list = document.createElement("ol");
+      list.className = "day-list";
+      for (let i = 0; i < 7; i++) {
+        const dayDate = addDays(monday, i);
+        const dayKey = toDateKey(dayDate);
+        const ms = dayTotalMs(state.weeks[weekKey], dayKey, now);
+        const li = document.createElement("li");
+        li.className = "day-row" + (ms === 0 ? " is-empty" : "");
+        li.innerHTML = `
+          <span class="day-name">${DAY_NAMES[i]}</span>
+          <span class="day-date">${formatShortDate(dayDate)}</span>
+          <span class="day-hours">${ms ? formatDuration(ms) : "—"}</span>
+        `;
+        list.appendChild(li);
+      }
+      details.appendChild(list);
+
+      item.querySelector(".history-summary").addEventListener("click", () => {
+        const open = item.hasAttribute("open");
+        item.toggleAttribute("open", !open);
+        item.querySelector(".history-summary").setAttribute("aria-expanded", String(!open));
+      });
+
+      els.historyList.appendChild(item);
+    }
+  }
+
+  function clockIn() {
+    if (state.activeShift) return;
+    state.activeShift = { clockIn: new Date().toISOString() };
+    saveState();
+    render();
+    startTicker();
+  }
+
+  function clockOut() {
+    if (!state.activeShift) return;
+    const clockInIso = state.activeShift.clockIn;
+    const clockOutIso = new Date().toISOString();
+    commitShift(clockInIso, clockOutIso);
+    state.activeShift = null;
+    saveState();
+    render();
+    stopTicker();
+  }
+
+  function startTicker() {
+    stopTicker();
+    tickTimer = setInterval(render, 1000);
+  }
+
+  function stopTicker() {
+    if (tickTimer) {
+      clearInterval(tickTimer);
+      tickTimer = null;
+    }
+  }
+
+  function downloadBlob(filename, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadBackup() {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: "Construction Tracker",
+      data: state,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    downloadBlob(`construction-tracker-backup-${toDateKey(new Date())}.json`, blob);
+  }
+
+  async function downloadAppFile() {
+    if (document.documentElement.dataset.standalone === "1") {
+      alert("You are already using the downloaded app file.");
+      return;
+    }
+    // Bundle a standalone HTML the phone can keep offline.
+    const [html, css, js] = await Promise.all([
+      fetch("index.html").then((r) => r.text()),
+      fetch("styles.css").then((r) => r.text()),
+      fetch("app.js").then((r) => r.text()),
+    ]);
+    const main = html.match(/<main[\s\S]*<\/main>/)?.[0];
+    const dialog = html.match(/<dialog[\s\S]*<\/dialog>/)?.[0];
+    if (!main || !dialog) throw new Error("Could not assemble standalone file");
+
+    const standalone = `<!DOCTYPE html>
+<html lang="en" data-standalone="1">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1a1c1e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Construction Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+${css}
+</style>
+</head>
+<body>
+${main}
+${dialog}
+<script>
+${js}
+</script>
+</body>
+</html>`;
+
+    downloadBlob("construction-tracker.html", new Blob([standalone], { type: "text/html" }));
+  }
+
+  els.clockBtn.addEventListener("click", () => {
+    if (state.activeShift) clockOut();
+    else clockIn();
+  });
+
+  function importBackupFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        const data = parsed.data || parsed;
+        if (!data || typeof data !== "object" || !data.weeks) {
+          throw new Error("Not a Construction Tracker backup");
+        }
+        if (!window.confirm("Replace all hours on this phone with the backup?")) return;
+        state = {
+          version: 1,
+          activeShift: data.activeShift || null,
+          weeks: data.weeks || {},
+        };
+        saveState();
+        if (state.activeShift) startTicker();
+        else stopTicker();
+        render();
+      } catch (err) {
+        console.error(err);
+        alert("Could not import that file. Use a backup JSON from this app.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  els.downloadBackup.addEventListener("click", downloadBackup);
+  els.importBackup.addEventListener("change", () => {
+    const file = els.importBackup.files && els.importBackup.files[0];
+    els.importBackup.value = "";
+    if (file) importBackupFile(file);
+  });
+  els.downloadApp.addEventListener("click", () => {
+    downloadAppFile().catch((err) => {
+      console.error(err);
+      alert("Could not build the download file. Try again while online.");
+    });
+  });
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstall = e;
+    els.installBtn.hidden = false;
+    els.installHint.textContent = "Install puts Construction Tracker on your home screen like a normal app.";
+  });
+
+  els.installBtn.addEventListener("click", async () => {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    els.installBtn.hidden = true;
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+
+  // Keep week archive correct if an open shift spans past Sunday night.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") render();
+  });
+
+  render();
+  if (state.activeShift) startTicker();
+})();
+
+</script>
+</body>
+</html>
